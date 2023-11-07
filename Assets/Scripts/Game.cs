@@ -1,9 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityStandardAssets.Characters.FirstPerson;
+using UnityEngine.SceneManagement;
 
 public class Game : MonoBehaviour
 {
+    
+    public GameObject gameOverPanel;
+
     public GameUI gameUI;
     public GameObject player;
     public int score;
@@ -27,7 +32,38 @@ public class Game : MonoBehaviour
         StartCoroutine("updateWaveTimer");
         SpawnRobots();
     }
-   
+
+    public void OnGUI()
+    {
+        if (isGameOver && Cursor.visible == false)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+
+    public void GameOver()
+    {
+        isGameOver = true;
+        Time.timeScale = 0;
+        player.GetComponent<FirstPersonController>().enabled = false;
+        player.GetComponent<CharacterController>().enabled = false;
+        gameOverPanel.SetActive(true);
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(Constants.SceneBattle);
+        gameOverPanel.SetActive(true);
+    }
+    public void Exit()
+    {
+        Application.Quit();
+    }
+    public void MainMenu()
+    {
+        SceneManager.LoadScene(Constants.SceneMenu);
+    }
     private void SpawnRobots()
     {
         foreach (RobotSpawn spawn in spawns)
@@ -45,7 +81,6 @@ public class Game : MonoBehaviour
             yield return new WaitForSeconds(1f);
             waveCountdown--;
             gameUI.SetWaveText(waveCountdown);
-            // Spawn next wave and restart count down
             if (waveCountdown == 0)
             {
                 SpawnRobots();
@@ -59,7 +94,6 @@ public class Game : MonoBehaviour
     {
         singleton.enemiesLeft--;
         singleton.gameUI.SetEnemyText(singleton.enemiesLeft);
-        // Give player bonus for clearing the wave before timer is done
         if (singleton.enemiesLeft == 0)
         {
             singleton.score += 50;
